@@ -4,7 +4,9 @@
 
 # 初步设想
 
-Nginx + HLS
+~~Nginx + HLS~~
+
+### wails = golang+ vue3 + chrome
 
 > HLSHTTP Live Streaming 苹果公司开放的支持 html5 直接播放的视频流技术。 Nginx 实现 http 服务器功能，可以通过 http 访问 m3u8 文件实现播放。
 
@@ -13,7 +15,6 @@ Nginx + HLS
 ```bash
 ffmpeg -i "G:\video magic leap2.avi" -f hls "G:\video\HLR\test.m3u8"
 ```
-
 对于大文件用上面这种方式有可能出现 m3u8 缺少索引的情况，因此也可以使用以下的方式对文件进行转换。
 
 ```bash
@@ -24,35 +25,8 @@ ffmpeg -i bigfile.mp4 -codec:v libx264 -codec:a aac -map 0 -f ssegment -segment_
 
 # 截取视频
 ffmpeg -i 01.mp4 -ss 00:05:00 -t 00:05:00 -c copy output.mp4
-
-# 拼接视频
-文件名 input.txt
-file 'video1.mp4'
-file 'video2.mp4'
-file 'video3.mp4'
-
-ffmpeg -f concat -safe 0 -i input.txt -c copy output.mp4
-ffmpeg 会将列出的视频文件按照顺序拼接在一起并输出到指定的文件中
-
 ```
-
-直接使用 Nginx 访问文件路径不需要多余的软件，直接将 m3u8 文件所在目录设置为 http server 的根目录。
-
-```sh
-    server {
-        listen       80;
-        server_name  localhost;
-        #charset koi8-r;
-        #access_log logs/host.access.log main;
-        location / {
-            # root html;
-            root /var/www/html;
-            index  index.html index.htm;
-        }
-    }
-```
-
-让系统开机全屏启动浏览并打开指定部署的静态服务地址,
+让系统开机全屏启动
 
 感觉直接用下的 wails (golang+vue) 更加方便部署, 性能虽然不如 nginx 但是我也没有高并发需求 基本够用了
 
