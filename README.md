@@ -19,14 +19,14 @@ ffmpeg -i "G:\video magic leap2.avi" -f hls "G:\video\HLR\test.m3u8"
 ```bash
 ffmpeg -i bigfile.mp4 -codec:v libx264 -codec:a aac -map 0 -f ssegment -segment_format mpegts -segment_list tos.m3u8 -segment_time 10 taste_of_shanghai%04d.ts
 ```
- 
+
 ```bash
 
 # 截取视频
 ffmpeg -i 01.mp4 -ss 00:05:00 -t 00:05:00 -c copy output.mp4
 
 # 拼接视频
-文件名 input.txt 
+文件名 input.txt
 file 'video1.mp4'
 file 'video2.mp4'
 file 'video3.mp4'
@@ -36,9 +36,8 @@ ffmpeg 会将列出的视频文件按照顺序拼接在一起并输出到指定�
 
 ```
 
+直接使用 Nginx 访问文件路径不需要多余的软件，直接将 m3u8 文件所在目录设置为 http server 的根目录。
 
-直接使用Nginx访问文件路径
-不需要多余的软件，直接将m3u8文件所在目录设置为http server的根目录。
 ```sh
     server {
         listen       80;
@@ -52,11 +51,17 @@ ffmpeg 会将列出的视频文件按照顺序拼接在一起并输出到指定�
         }
     }
 ```
-让系统开机全屏启动浏览并打开指定部署的静态服务地址, 
+
+让系统开机全屏启动浏览并打开指定部署的静态服务地址,
+
+感觉直接用下的 wails (golang+vue) 更加方便部署, 性能虽然不如 nginx 但是我也没有高并发需求 基本够用了
+
 ### 软件
-- 使用vue3开发前端交互
-- 使用支持m3u8的js播放器 , 可能需要魔改支持遥控器快进,快退, 上一集,下一集, 视频列表, 剧集列表等...
+
+-   使用 vue3 开发前端交互
+-   使用支持 m3u8 的 js 播放器 , 可能需要魔改支持遥控器快进,快退, 上一集,下一集, 视频列表, 剧集列表等...
 
 ### 硬件
+
 -   PC
 -   2.4 遥控器
