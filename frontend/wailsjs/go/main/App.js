@@ -6,6 +6,14 @@ export function Fuck(arg1) {
   return window['go']['main']['App']['Fuck'](arg1);
 }
 
+export function GetVideoDetail() {
+  return window['go']['main']['App']['GetVideoDetail']();
+}
+
+export function GetVideoList() {
+  return window['go']['main']['App']['GetVideoList']();
+}
+
 export function Greet(arg1) {
   return window['go']['main']['App']['Greet'](arg1);
 }

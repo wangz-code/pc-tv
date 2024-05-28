@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"os"
 )
 
 // App struct
@@ -29,4 +31,58 @@ func (a *App) Greet(name string) string {
 // fuck
 func (a *App) Fuck(name string) string {
 	return fmt.Sprintf("Hello Fuck")
+}
+
+type Videos struct {
+	Path    string   `json:"path"`    // 路径
+	Name    string   `json:"name"`    // 视频名 默认文件夹名
+	List    string   `json:"List"`    // 列表, 子目录的 .m3u8文件 , 有几个便是几集
+	Thumb   string   `json:"thumb"`   // 缩略图
+	History []string `json:"history"` // 历史记录, [0]:剧集 [1]:时分秒
+}
+
+var HlsPath = "./hls_videos"
+
+// 获取视频列表
+func (a *App) GetVideoList() []Videos {
+
+	videoList := []Videos{}
+	files, err := os.ReadDir(HlsPath)
+	if err != nil {
+		fmt.Println("读取文件夹时出错:", err)
+		return videoList
+	}
+	for _, file := range files {
+		if file.IsDir() {
+			dirName := file.Name()
+			// 创建 Videos 对象
+			video := Videos{Name: dirName}
+
+			fmt.Println("视频名:", video.Name)
+		}
+	}
+	return videoList
+}
+
+// 获取单个视频详情
+func (a *App) GetVideoDetail() Videos {
+	return Videos{}
+}
+
+func RunStaticServer() {
+	// 定义一个文件服务器指向指定目录
+	fs := http.FileServer(http.Dir("./hls_videos"))
+
+	// 设置路由，将所有请求都交给文件服务器处理
+	http.Handle("/static", fs)
+
+	// 启动服务器并指定监听的端口
+	port := ":8080"
+	err := http.ListenAndServe(port, nil)
+	if err != nil {
+		panic(err)
+	}
+	// 打印输出服务器已启动信息
+	fmt.Printf("静态文件服务器已启动，监听端口 %s\n", port)
+
 }

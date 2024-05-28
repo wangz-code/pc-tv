@@ -1,4 +1,4 @@
-module pc-tv
+module wztv
 
 go 1.21
 

@@ -1,9 +1,3 @@
-###
- # @Author: wangqz
- # @Date: 2024-05-27
- # @LastEditTime: 2024-05-27
- # @Description: content
-### 
 #!/bin/bash
 
 input_dir="./videos"

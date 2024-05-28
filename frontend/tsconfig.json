@@ -1,37 +1,30 @@
 {
-    "display": "Base",
-    "compilerOptions": {
-        "composite": false,
-        "jsx": "preserve",
-        "experimentalDecorators": true,
-        "moduleResolution": "node",
-        "resolveJsonModule": true,
-        "allowJs": true,
-        "strict": true,
-        "strictFunctionTypes": false,
-        "noImplicitAny": false,
-        "noUnusedLocals": false,
-        "noUnusedParameters": false,
-        "declaration": true,
-        "declarationMap": true,
-        "inlineSources": false,
-        "removeComments": true,
-        "allowSyntheticDefaultImports": true,
-        "esModuleInterop": true,
-        "forceConsistentCasingInFileNames": true,
-        "isolatedModules": true,
-        "preserveWatchOutput": true,
-        "skipLibCheck": true,
-        "target": "esnext",
-        "lib": ["dom", "esnext"],
-        "baseUrl": ".",
-        "module": "esnext",
-        "paths": {
-            "@/*": ["src/*"],
-            "@wailsjs/*": ["wailsjs/*"]
-        },
-        "types": ["vite/client", "naive-ui/volar"]
-    },
-    "exclude": ["**/node_modules/**", "**/dist/**"],
-    "include": ["autoImport", "src", "wailsjs/**/*.ts"]
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "jsx": "preserve",
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
 }
