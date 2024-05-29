@@ -85,6 +85,8 @@ onMounted(() => {
 	display: grid;
 	grid-template-columns: repeat(8, 12.5%);
 	grid-template-rows: repeat(8, 350px);
+	max-height: calc(100vh - 60px);
+	overflow: auto;
 }
 
 .container .video {
@@ -113,6 +115,7 @@ onMounted(() => {
 }
 .box {
 	display: flex;
+	height: 50px;
 }
 .mr-10 {
 	margin-right: 10px;

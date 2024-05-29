@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
 )
 
@@ -45,7 +44,6 @@ var HlsPath = "./hls_videos"
 
 // 获取视频列表
 func (a *App) GetVideoList() []Videos {
-
 	videoList := []Videos{}
 	files, err := os.ReadDir(HlsPath)
 	if err != nil {
@@ -67,22 +65,4 @@ func (a *App) GetVideoList() []Videos {
 // 获取单个视频详情
 func (a *App) GetVideoDetail() Videos {
 	return Videos{}
-}
-
-func RunStaticServer() {
-	// 定义一个文件服务器指向指定目录
-	fs := http.FileServer(http.Dir("./hls_videos"))
-
-	// 设置路由，将所有请求都交给文件服务器处理
-	http.Handle("/static", fs)
-
-	// 启动服务器并指定监听的端口
-	port := ":8080"
-	err := http.ListenAndServe(port, nil)
-	if err != nil {
-		panic(err)
-	}
-	// 打印输出服务器已启动信息
-	fmt.Printf("静态文件服务器已启动，监听端口 %s\n", port)
-
 }
