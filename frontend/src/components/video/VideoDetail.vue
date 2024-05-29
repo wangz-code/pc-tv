@@ -80,7 +80,6 @@ onBeforeUnmount(() => {
 <template>
 	<div class="container">
 		<div id="dplayer" tabindex="0"></div>
-
 		<img :src="contro" alt="" style="width: 25%" />
 	</div>
 </template>

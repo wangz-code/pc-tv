@@ -23,7 +23,10 @@ for (let i = 0; i < 100; i++) {
 const key = "VideoId_Key";
 let preIdx = VStore.initValue(key, 0); // 当前焦点
 
-const setFocus = () => setTimeout(() => document.getElementById("v" + preIdx)?.focus(), 0);
+const setFocus = () =>
+	setTimeout(() => {
+		document.getElementById("v" + preIdx)?.focus();
+	}, 0);
 
 // 光标移动
 const moveItem = (params) => {
@@ -53,6 +56,7 @@ const keyMap = {
 
 onMounted(() => {
 	setFocus();
+	document.getElementById("v" + preIdx)?.scrollIntoView()
 	document.addEventListener("keydown", (event) => {
 		state.keyCode = event.code;
 		keyMap[state.keyCode] && keyMap[state.keyCode]();
