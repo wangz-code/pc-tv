@@ -1,0 +1,10 @@
+.province-font,
+.color-333 {
+	transition: all 0.2s;
+}
+
+.province-font:hover,
+.province-font:active,
+.color-333:active {
+	background: #01be6e;
+}

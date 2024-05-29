@@ -1,12 +1,5 @@
-<script lang="ts" setup>
-import { VideoList, VideoDetail } from "./components/video";
-</script>
-
 <template>
-	<div>
-		<VideoList />
-		<VideoDetail />
-	</div>
+	<a-config-provider size="large" :global="true">
+		<router-view />
+	</a-config-provider>
 </template>
-
-<style></style>

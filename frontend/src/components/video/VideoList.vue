@@ -1,21 +1,15 @@
-<script lang="ts" setup>
-import { ref, reactive } from "vue";
+<script setup>
+import { ref, reactive, onMounted, toRaw } from "vue";
 
-interface Video {
-	name: string;
-	path: string;
-	list: string[]; // 列表, 子目录的 .m3u8文件 , 有几个便是几集
-	thumb: string; // 缩略图
-	history: number[]; // 历史记录, [0]:剧集 [1]:时分秒
-	focus: boolean; // 历史记录, [0]:剧集 [1]:时分秒
-}
-
-const keyDown = reactive({
-	code: "",
+const emit = defineEmits(["detail"]);
+const state = reactive({
+	keyCode: "",
+	videoList: [],
 });
-const videoList = ref<Video[]>([]);
+const videoList = state.videoList;
+
 for (let i = 0; i < 100; i++) {
-	videoList.value.push({
+	videoList.push({
 		focus: i == 0,
 		name: "白兔塘" + i,
 		path: "",
@@ -25,76 +19,53 @@ for (let i = 0; i < 100; i++) {
 	});
 }
 
-// 获取焦点
-let preIdx = 0;
-const onMvFocus = (idx: number) => {
-	if (preIdx != idx) {
-		videoList.value[preIdx].focus = false;
-		preIdx = idx;
-	}
-	videoList.value[idx].focus = true;
+let preIdx = 0; // 当前焦点
+
+const setFocus = () => setTimeout(() => document.getElementById("v" + preIdx)?.focus(), 0);
+
+// 光标移动
+const moveItem = (params) => {
+	return () => {
+		const nextIdx = preIdx + params.offset;
+		if (!videoList[nextIdx]) return;
+
+		videoList[preIdx].focus = false;
+		videoList[nextIdx].focus = true;
+
+		preIdx = nextIdx;
+		if (videoList[preIdx + params.nextOffset]) {
+			videoList[preIdx + params.nextOffset].focus = false;
+		}
+		setFocus();
+	};
 };
 
-function debounce(func: Function, delay: number) {
-	let timer: number;
-	return (...args: any[]) => {
-		clearTimeout(timer);
-		timer = setTimeout(() => {
-			func.apply(null, args);
-		}, delay);
-	};
-}
-
-const setFocus = () => {
-	setTimeout(() => {
-		const element = document.getElementById("v" + preIdx);
-		element?.focus();
-	}, 0);
+const keyMap = {
+	ArrowLeft: moveItem({ offset: -1, nextOffset: 1 }),
+	ArrowRight: moveItem({ offset: 1, nextOffset: -1 }),
+	ArrowUp: moveItem({ offset: -8, nextOffset: 8 }),
+	ArrowDown: moveItem({ offset: 8, nextOffset: -8 }),
+	Enter: () => emit("detail", toRaw(videoList[preIdx])),
 };
 
 document.addEventListener("keydown", (event) => {
-	keyDown.code = event.code;
-	switch (keyDown.code) {
-		case "ArrowRight":
-			if (!videoList.value[preIdx + 1]) return;
-			preIdx += 1;
-			videoList.value[preIdx].focus = true;
-			videoList.value[preIdx - 1].focus = false;
-
-			break;
-		case "ArrowUp":
-			if (!videoList.value[preIdx - 8]) return;
-			preIdx -= 8;
-			videoList.value[preIdx].focus = true;
-			videoList.value[preIdx + 8].focus = false;
-			break;
-		case "ArrowLeft":
-			if (!videoList.value[preIdx - 1]) return;
-			preIdx -= 1;
-			videoList.value[preIdx].focus = true;
-			videoList.value[preIdx + 1].focus = false;
-			break;
-		case "ArrowDown":
-			if (!videoList.value[preIdx + 8]) return;
-			preIdx += 8;
-			videoList.value[preIdx].focus = true;
-			videoList.value[preIdx - 8].focus = false;
-			break;
-	}
-	setFocus();
+	state.keyCode = event.code;
+	keyMap[state.keyCode] && keyMap[state.keyCode]();
 });
+
+onMounted(() => setFocus());
 </script>
 
 <template>
 	<div class="box">
 		<h1 class="mr-10">动画片</h1>
-		<h1 class="mr-10">按键: {{ keyDown.code }}</h1>
+		<h1 class="mr-10">按键: {{ state.keyCode }}</h1>
 		<h1 class="mr-10">动画片</h1>
 	</div>
 	<div class="container">
-		<div v-for="(item, idx) in videoList" :id="'v' + idx" :key="idx" :tabindex="idx" class="video" :class="{ mvfoucs: item.focus }" @focus="onMvFocus(idx)">
+		<div v-for="(item, idx) in videoList" :id="'v' + idx" :key="idx" :tabindex="idx" class="video" :class="{ mvfoucs: item.focus }">
 			<div class="img">
-				<img :src="item.thumb" alt="" srcset="" width="100%" />
+				<img :src="item.thumb" alt="图片" style="width: 100%;" />
 			</div>
 			<div class="tittle">{{ item.name }} {{ "v" + idx }}</div>
 		</div>
@@ -124,6 +95,7 @@ document.addEventListener("keydown", (event) => {
 	height: 300px;
 	overflow: hidden;
 }
+
 .container .video .tittle {
 	overflow: hidden;
 }

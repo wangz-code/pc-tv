@@ -1,25 +1,25 @@
 {
-  "name": "frontend",
+  "name": "customers-client",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "dev": "vite --host",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "axios": "^1.6.0",
     "dplayer": "^1.27.1",
-    "hls.js": "^1.5.8",
-    "vue": "^3.2.37"
+    "query-string": "^8.1.0",
+    "vue": "^3.3.4",
+    "vue-router": "^4.2.5"
   },
   "devDependencies": {
-    "@babel/types": "^7.18.10",
-    "@types/dplayer": "^1.25.5",
-    "@vitejs/plugin-vue": "^3.0.3",
-    "prettier": "3.2.5",
-    "typescript": "^4.6.4",
-    "vite": "^3.0.7",
-    "vue-tsc": "^1.8.27"
+    "@arco-design/web-vue": "^2.53.0",
+    "@vitejs/plugin-vue": "^4.2.3",
+    "unplugin-auto-import": "^0.16.7",
+    "unplugin-vue-components": "^0.25.2",
+    "vite": "^4.4.5"
   }
 }
