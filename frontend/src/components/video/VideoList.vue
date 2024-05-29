@@ -1,9 +1,11 @@
 <script setup>
 import { ref, reactive, onMounted, toRaw } from "vue";
+import { VStore } from "@/utils/store.js";
 
 const emit = defineEmits(["detail"]);
 const state = reactive({
 	keyCode: "",
+	press: "",
 	videoList: [],
 });
 const videoList = state.videoList;
@@ -18,8 +20,8 @@ for (let i = 0; i < 100; i++) {
 		history: [1, 101001],
 	});
 }
-
-let preIdx = 0; // 当前焦点
+const key = "VideoId_Key";
+let preIdx = VStore.initValue(key, 0); // 当前焦点
 
 const setFocus = () => setTimeout(() => document.getElementById("v" + preIdx)?.focus(), 0);
 
@@ -36,6 +38,7 @@ const moveItem = (params) => {
 		if (videoList[preIdx + params.nextOffset]) {
 			videoList[preIdx + params.nextOffset].focus = false;
 		}
+		VStore.setValue(key, preIdx);
 		setFocus();
 	};
 };
@@ -48,12 +51,13 @@ const keyMap = {
 	Enter: () => emit("detail", toRaw(videoList[preIdx])),
 };
 
-document.addEventListener("keydown", (event) => {
-	state.keyCode = event.code;
-	keyMap[state.keyCode] && keyMap[state.keyCode]();
+onMounted(() => {
+	setFocus();
+	document.addEventListener("keydown", (event) => {
+		state.keyCode = event.code;
+		keyMap[state.keyCode] && keyMap[state.keyCode]();
+	});
 });
-
-onMounted(() => setFocus());
 </script>
 
 <template>
@@ -65,7 +69,7 @@ onMounted(() => setFocus());
 	<div class="container">
 		<div v-for="(item, idx) in videoList" :id="'v' + idx" :key="idx" :tabindex="idx" class="video" :class="{ mvfoucs: item.focus }">
 			<div class="img">
-				<img :src="item.thumb" alt="图片" style="width: 100%;" />
+				<img :src="item.thumb" alt="图片" style="width: 100%" />
 			</div>
 			<div class="tittle">{{ item.name }} {{ "v" + idx }}</div>
 		</div>

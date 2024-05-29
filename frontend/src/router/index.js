@@ -39,16 +39,6 @@ const router = createRouter({
 					name: "Welcome",
 					component: () => import("@/views/welcome/index.vue"),
 				},
-				{
-					path: "usecoupons/:uniqueno",
-					name: "UseCoupons",
-					component: () => import("@/views/usecoupons/index.vue"),
-				},
-				{
-					path: "shareh5/:billno",
-					name: "ShareH5",
-					component: () => import("@/views/shareh5/index.vue"),
-				},
 			],
 		},
 		REDIRECT_MAIN,

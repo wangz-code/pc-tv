@@ -21,7 +21,16 @@ export default defineConfig({
 			],
 		}),
 	],
-	base:"/",
+	server: {
+		proxy: {
+			"/static": {
+				target: "http://localhost:6600", // Nginx 服务器的地址
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/static/, ""),
+			},
+		},
+	},
+	base: "/",
 	resolve: {
 		alias: {
 			"@": nodeResolve("src"),

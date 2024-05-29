@@ -13,7 +13,6 @@ const showList = () => {
 };
 </script>
 <template>
-	<h1>welcome {{ show }}</h1>
 	<VideoList v-if="show == 'list'" @detail="showDetail"></VideoList>
 	<VideoDetail v-if="show == 'detail'" @back="showList"></VideoDetail>
 </template>

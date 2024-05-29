@@ -48,9 +48,10 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "TV",
-		Width:  1920,
-		Height: 1080,
+		Title:      "TV",
+		Width:      800,
+		Height:     600,
+		Fullscreen: true,
 		AssetServer: &assetserver.Options{
 			Assets:  assets,
 			Handler: NewFileLoader(),
@@ -61,7 +62,6 @@ func main() {
 			app,
 		},
 	})
-
 	if err != nil {
 		println("Error:", err.Error())
 	}
