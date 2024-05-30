@@ -2,25 +2,71 @@
   import Hls from "hls.js";
   import DPlayer from "dplayer";
   import { onBeforeUnmount, onMounted } from "vue";
-  const emit = defineEmits(["back"]);
+  import { queryVideoDetail, videoUrl } from "/@/api/hlsvideo";
+  import { getNginxHref } from "/@/utils";
+  import { reactive } from "vue";
+  import { ref } from "vue";
+  const emit = defineEmits<{
+    back: [];
+  }>();
+  const props = defineProps<{
+    vname: string;
+  }>();
+  type videoItem = {
+    focus: boolean;
+    name: string;
+    url: string;
+    history: number[];
+  };
 
   let dp: DPlayer;
   let timeId: NodeJS.Timeout;
   let count = 0;
-  const state = {
+  const M3U8 = ".m3u8";
+  const dpRef = ref(null);
+  const state = reactive({
     fullScreen: false,
     pause: true,
+    videoItem: [] as videoItem[],
+  });
+
+  const getVideoDetail = async () => {
+    try {
+      const { status, data } = await queryVideoDetail(props.vname);
+      if (status == 200) {
+        const m3u8List = getNginxHref(data).filter((item) => item.includes(M3U8));
+        const list = [] as videoItem[];
+        m3u8List.forEach((item, idx) => {
+          list.push({
+            focus: idx == 0,
+            name: item.replace(M3U8, ""),
+            url: videoUrl([props.vname, item]),
+            history: [1, 101001],
+          });
+        });
+        state.videoItem = list;
+        if (list.length) {
+          dp = dpInit(list[0].url);
+          dp.play();
+        }
+      }
+    } catch (error) {
+      console.log("报错 log==>", error);
+    }
   };
+
   const moveItem = (opt: any) => {
     console.log("opt log==>", opt);
   };
+  // 上下左右非全屏是选集, 全屏时快进和音量
   const keyMap = {
-    ArrowLeft: moveItem({ offset: -1, nextOffset: 1 }), // 快退
-    ArrowRight: moveItem({ offset: 1, nextOffset: -1 }), // 快进
-    ArrowUp: moveItem({ offset: -8, nextOffset: 8 }), // 上一集
-    ArrowDown: moveItem({ offset: 8, nextOffset: -8 }), // 下一集
+    ArrowLeft: moveItem({ offset: -1, nextOffset: 1 }), // 选集
+    ArrowRight: moveItem({ offset: 1, nextOffset: -1 }),
+    ArrowUp: moveItem({ offset: -8, nextOffset: 8 }),
+    ArrowDown: moveItem({ offset: 8, nextOffset: -8 }),
     Unidentified: () => emit("back"),
     ContextMenu: () => emit("back"),
+    Escape: () => emit("back"),
     Enter: () => {
       // 单击是暂停/播放
       // 双击是全屏
@@ -54,13 +100,12 @@
     call && call();
   };
 
-  onMounted(() => {
-    const dpDom = document.getElementById("dplayer");
+  const dpInit = function (url: string) {
     dp = new DPlayer({
-      container: dpDom,
+      container: dpRef.value,
       volume: 0.9,
       video: {
-        url: "hls_videos/白兔糖_one/01.m3u8",
+        url,
         type: "customHls",
         customType: {
           customHls: function (video: any) {
@@ -71,7 +116,11 @@
         },
       },
     });
-    dp.play();
+    return dp;
+  };
+
+  onMounted(() => {
+    getVideoDetail();
     document.addEventListener("keydown", keyDownFn);
   });
 
@@ -82,19 +131,33 @@
 
 <template>
   <div class="container">
-    <div id="dplayer" tabindex="0"></div>
-    <img src="/img/contro.jpg" alt="" style="width: 25%" />
+    <a-card :style="{ width: '80%' }" :title="vname" :bordered="false">
+      <div id="dplayer" ref="dpRef" tabindex="0"></div>
+      <a-card title="剧集" hoverable :bordered="false">
+        <a-space>
+          <a-button :type="item.focus ? 'primary' : 'outline'" v-for="item in state.videoItem">{{ `第${item.name}集` }}</a-button>
+        </a-space>
+      </a-card>
+    </a-card>
+    <a-card :style="{ width: '20%', marginLeft: '24px' }" title="说明" hoverable :bordered="false">
+      <div>
+        <h3>全屏状态: 左右对应快退/快进</h3>
+        <h3>全屏状态: 双击上下切换剧集</h3>
+        <h3>默认状态: 左右选择剧集 </h3>
+        <h3>确认键: 单击暂停, 双击切换全屏 </h3>
+      </div>
+      <div> <img src="/img/contro.jpg" alt="" style="width: 100%" /> </div>
+    </a-card>
   </div>
 </template>
 
 <style scoped>
   .container {
-    width: 100%;
     display: flex;
-    justify-content: center;
-    margin-top: 10%;
-  }
-  #dplayer {
-    width: 60%;
+    width: 100%;
+    height: 100vh;
+    padding: 3vh 10vh 1vh 10vh;
+    box-sizing: border-box;
+    background-color: var(--color-fill-2);
   }
 </style>

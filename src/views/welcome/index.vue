@@ -2,10 +2,10 @@
   import { ref } from "vue";
   import { VideoDetail, VideoList } from "/@/components/video/index";
   const show = ref<"list" | "detail">("list");
-
-  const showDetail = () => {
+  const vname = ref("");
+  const showDetail = (name: string) => {
     show.value = "detail";
-    console.log("showDetail log==>");
+    vname.value = name;
   };
 
   const showList = () => {
@@ -14,5 +14,5 @@
 </script>
 <template>
   <VideoList v-if="show == 'list'" @detail="showDetail"></VideoList>
-  <VideoDetail v-if="show == 'detail'" @back="showList"></VideoDetail>
+  <VideoDetail v-if="show == 'detail'" :vname="vname" @back="showList"></VideoDetail>
 </template>

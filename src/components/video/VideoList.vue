@@ -1,45 +1,54 @@
 <script setup lang="ts">
-  import { onMounted, reactive, toRaw } from "vue";
+  import { onMounted, reactive } from "vue";
+  import { queryVideoList } from "/@/api/hlsvideo";
+  import { getNginxHref } from "/@/utils";
   import { VStore } from "/@/utils/store.ts";
 
-  const emit = defineEmits(["detail"]);
+  const emit = defineEmits<{
+    detail: [value: string];
+  }>();
+  const key = "VideoId_Key";
   const state = reactive({
     keyCode: "" as KM,
     press: "",
     videoList: [] as any[],
   });
-  const videoList = state.videoList;
 
-  for (let i = 0; i < 100; i++) {
-    videoList.push({
-      focus: i == 0,
-      name: "白兔塘" + i,
-      path: "",
-      list: [],
-      thumb: i % 2 ? "https://img2.imgtp.com/2024/05/28/iOGYn0id.webp" : "https://img2.imgtp.com/2024/05/28/cl6D1cqW.jpg",
-      history: [1, 101001],
-    });
-  }
-  const key = "VideoId_Key";
   let preIdx = VStore.initValue(key, 0); // 当前焦点
+  const setFocus = () => setTimeout(() => document.getElementById("v" + preIdx)?.focus(), 50);
 
-  const setFocus = () =>
-    setTimeout(() => {
-      document.getElementById("v" + preIdx)?.focus();
-    }, 0);
+  const getVideoList = async () => {
+    try {
+      const { status, data } = await queryVideoList();
+      if (status == 200) {
+        getNginxHref(data).forEach((name, idx) => {
+          state.videoList.push({
+            focus: idx == 0,
+            name,
+            path: "",
+            list: [],
+            thumb: idx % 2 ? "https://img2.imgtp.com/2024/05/28/iOGYn0id.webp" : "https://img2.imgtp.com/2024/05/28/cl6D1cqW.jpg",
+            history: [1, 101001],
+          });
+        });
+      }
+    } catch (error) {}
+  };
+
+  getVideoList();
 
   // 光标移动
   const moveItem = (params: { offset: number; nextOffset: number }) => {
     return () => {
       const nextIdx = preIdx + params.offset;
-      if (!videoList[nextIdx]) return;
+      if (!state.videoList[nextIdx]) return;
 
-      videoList[preIdx].focus = false;
-      videoList[nextIdx].focus = true;
+      state.videoList[preIdx].focus = false;
+      state.videoList[nextIdx].focus = true;
 
       preIdx = nextIdx;
-      if (videoList[preIdx + params.nextOffset]) {
-        videoList[preIdx + params.nextOffset].focus = false;
+      if (state.videoList[preIdx + params.nextOffset]) {
+        state.videoList[preIdx + params.nextOffset].focus = false;
       }
       VStore.setValue(key, preIdx);
       setFocus();
@@ -52,7 +61,7 @@
     ArrowRight: moveItem({ offset: 1, nextOffset: -1 }),
     ArrowUp: moveItem({ offset: -8, nextOffset: 8 }),
     ArrowDown: moveItem({ offset: 8, nextOffset: -8 }),
-    Enter: () => emit("detail", toRaw(videoList[preIdx])),
+    Enter: () => emit("detail", state.videoList[preIdx].name),
   };
 
   onMounted(() => {
@@ -72,11 +81,11 @@
     <h1 class="mr-10">动画片</h1>
   </div>
   <div class="container">
-    <div v-for="(item, idx) in videoList" :id="'v' + idx" :key="idx" :tabindex="idx" class="video" :class="{ mvfoucs: item.focus }">
+    <div v-for="(item, idx) in state.videoList" :id="`v${idx}`" :key="idx" :tabindex="idx" class="video" :class="{ mvfoucs: item.focus }">
       <div class="img">
         <img :src="item.thumb" alt="图片" style="width: 100%" />
       </div>
-      <div class="tittle">{{ item.name }} {{ "v" + idx }}</div>
+      <div class="tittle">{{ item.name }}</div>
     </div>
   </div>
 </template>
