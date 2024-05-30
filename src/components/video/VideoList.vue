@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { onMounted, reactive } from "vue";
-  import { queryVideoList } from "/@/api/hlsvideo";
+  import { queryVideoList, videoUrl } from "/@/api/hlsvideo";
   import { getNginxHref } from "/@/utils";
   import { VStore } from "/@/utils/store.ts";
 
@@ -27,7 +27,7 @@
             name,
             path: "",
             list: [],
-            thumb: idx % 2 ? "https://img2.imgtp.com/2024/05/28/iOGYn0id.webp" : "https://img2.imgtp.com/2024/05/28/cl6D1cqW.jpg",
+            thumb: videoUrl([name,name+'.webp']),
             history: [1, 101001],
           });
         });

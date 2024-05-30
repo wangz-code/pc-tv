@@ -1,11 +1,14 @@
 <script setup lang="ts">
-  import Hls from "hls.js";
-  import DPlayer from "dplayer";
   import { onBeforeUnmount, onMounted } from "vue";
   import { queryVideoDetail, videoUrl } from "/@/api/hlsvideo";
   import { getNginxHref } from "/@/utils";
   import { reactive } from "vue";
   import { ref } from "vue";
+  import { dpHls } from "./index";
+  import { LocalStore } from "/@/utils/localstore.ts";
+  import DPlayer from "dplayer";
+  import Hls from "hls.js";
+
   const emit = defineEmits<{
     back: [];
   }>();
@@ -16,13 +19,15 @@
     focus: boolean;
     name: string;
     url: string;
-    history: number[];
   };
 
   let dp: DPlayer;
   let timeId: NodeJS.Timeout;
   let count = 0;
+  let historyValue = LocalStore.getValue(props.vname) || [0, 0]; // 名称:[剧集,时间]
   const M3U8 = ".m3u8";
+  const videoIdx = ref(historyValue[0]); // 剧集
+  const setFocus = () => setTimeout(() => document.getElementById("d" + videoIdx.value)?.focus(), 50);
   const dpRef = ref(null);
   const state = reactive({
     fullScreen: false,
@@ -41,22 +46,46 @@
             focus: idx == 0,
             name: item.replace(M3U8, ""),
             url: videoUrl([props.vname, item]),
-            history: [1, 101001],
           });
         });
         state.videoItem = list;
-        if (list.length) {
-          dp = dpInit(list[0].url);
-          dp.play();
-        }
+
+        // 先看下历史记录, 如果没有就默认为第一个
+        dp = dpHls(dpRef, list[Number(historyValue[0])].url);
+        dp.seek(Number(historyValue[1])); // 跳转到特定时间
+        dp.play();
       }
     } catch (error) {
       console.log("报错 log==>", error);
     }
   };
+  let delayPlay: NodeJS.Timeout;
+  const moveItem = (params: { offset: number; nextOffset: number }) => {
+    return () => {
+      const preIdx = videoIdx.value;
+      const nextIdx = preIdx + params.offset;
+      if (!state.videoItem[nextIdx]) return;
 
-  const moveItem = (opt: any) => {
-    console.log("opt log==>", opt);
+      state.videoItem[preIdx].focus = false;
+      state.videoItem[nextIdx].focus = true;
+
+      videoIdx.value = nextIdx;
+      historyValue[0] = videoIdx.value;
+
+      if (state.videoItem[preIdx + params.nextOffset]) {
+        state.videoItem[preIdx + params.nextOffset].focus = false;
+      }
+      setFocus();
+
+      // 3秒后自动开始播放
+      delayPlay && clearTimeout(delayPlay);
+      delayPlay = setTimeout(() => {
+        const vData = state.videoItem[videoIdx.value];
+        dp.destroy();
+        dp = dpHls(dpRef, vData.url);
+        dp.play()
+      }, 1500);
+    };
   };
   // 上下左右非全屏是选集, 全屏时快进和音量
   const keyMap = {
@@ -96,32 +125,23 @@
 
   type KM = keyof typeof keyMap;
   const keyDownFn = (event: { code: string }) => {
+    console.log("event.code log==>", event.code);
+
     const call = keyMap[event.code as KM];
     call && call();
-  };
 
-  const dpInit = function (url: string) {
-    dp = new DPlayer({
-      container: dpRef.value,
-      volume: 0.9,
-      video: {
-        url,
-        type: "customHls",
-        customType: {
-          customHls: function (video: any) {
-            const hls = new Hls();
-            hls.loadSource(video.src);
-            hls.attachMedia(video);
-          },
-        },
-      },
-    });
-    return dp;
+    // 保存视频进度
+    if (dp) {
+      historyValue[1] = dp.video.currentTime;
+      LocalStore.setValue(props.vname, historyValue);
+      console.log("缓存 log==>");
+    }
   };
 
   onMounted(() => {
     getVideoDetail();
     document.addEventListener("keydown", keyDownFn);
+    setFocus();
   });
 
   onBeforeUnmount(() => {
@@ -134,8 +154,9 @@
     <a-card :style="{ width: '80%' }" :title="vname" :bordered="false">
       <div id="dplayer" ref="dpRef" tabindex="0"></div>
       <a-card title="剧集" hoverable :bordered="false">
+        {{ videoIdx }}
         <a-space>
-          <a-button :type="item.focus ? 'primary' : 'outline'" v-for="item in state.videoItem">{{ `第${item.name}集` }}</a-button>
+          <a-button :id="'d' + idx" :type="videoIdx == idx ? 'primary' : 'outline'" v-for="(item, idx) in state.videoItem">{{ `第${item.name}集` }}</a-button>
         </a-space>
       </a-card>
     </a-card>

@@ -14,6 +14,12 @@
 
 ### 采用vite+vue3 + nginx +  chrome.exe --kiosk 模式
 
+- 转hls脚本 把当前目录下的*.mp4 转成 hls(m3u8)
+```sh
+alias tohls='for file in *.mp4; do if [ -f "$file" ]; then filename=$(basename -- "$file"); filename_no_ext="${filename%.*}"; ffmpeg -i "$file" -c:v libx264 -hls_time 10 -hls_list_size 0 -hls_segment_filename "${filename_no_ext}_%03d.ts" "${filename_no_ext}.m3u8"; echo "已将文件 $file 转换为 HLS 格式."; fi; done'
+
+```
+
 - nginx.config
 
 ```sh
