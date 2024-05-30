@@ -12,7 +12,7 @@
 
 - ~~Wails~~ 此方案放弃,首先前端开发组合非常割裂, 其次是浏览器api有问题两边表现不一致, 还不好调试
 
-### 采用vite+vue3 + nginx
+### 采用vite+vue3 + nginx +  chrome.exe --kiosk 模式
 
 - nginx.config
 
@@ -44,6 +44,14 @@
 
 ```
 
+- win10 创建启动脚本 
+```sh
+# 路径: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\chromeRun.bat
+# 写入如下内容, 启动后就能直接进入全屏模式  http://cn.bing.com/ 替换为本地路径 http://127.0.0.1:6600 , 使用Alt+F4能退出
+
+start chrome.exe --kiosk http://cn.bing.com
+```
+
 ### split.sh 视频分割脚本
 
 仅支持数字开头的剧集, 自动切分, 比如 01.mp4 分割后 01.ts... 01.m3u8 文件
@@ -63,5 +71,6 @@
 
 ### 问题
 
+放弃 wails 采用chrome全屏模式
 - 使用了新版本的组件库, 热更新有问题, 目前就是前端单独开发, 之后用 wails 套个壳子
-- 遥控器无法识别 返回 主页, 菜单键 keycode = "Unidentified" 目前当成返回用, 声音加减正常
+- wails下遥控器无法识别 返回 主页, 菜单键 keycode = "Unidentified" 目前当成返回用, 声音加减正常
