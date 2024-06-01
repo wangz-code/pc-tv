@@ -1,1 +1,0 @@
-import{_ as s,r as c,o as e,c as o,w as a,a as _,b as l,T as f}from"./index-6569d9b5.js";const u={};function i(d,m){const t=c("router-view");return e(),o(t,null,{default:a(({Component:n,route:r})=>[_(f,{name:"fade",mode:"out-in",appear:""},{default:a(()=>[(e(),o(l(n),{key:r.fullPath}))]),_:2},1024)]),_:1})}const v=s(u,[["render",i]]);export{v as default};

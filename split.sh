@@ -2,8 +2,7 @@
 
 input_dir="./videos"
 output_dir="./hls_videos"
-
-
+ffmpeg -i 01.mp4 -c:v copy -c:a copy -hls_time 10 -hls_list_size 0 01.m3u8
 
 # 遍历视频文件并转换为 HLS 格式
 find "${input_dir}" -type f -name '*.mp4' | while read video_file; do

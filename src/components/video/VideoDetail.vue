@@ -7,8 +7,7 @@
   import { dpHls } from "./index";
   import { LocalStore } from "/@/utils/localstore.ts";
   import DPlayer from "dplayer";
-  import Hls from "hls.js";
-
+  
   const emit = defineEmits<{
     back: [];
   }>();
@@ -93,8 +92,8 @@
     ArrowRight: moveItem({ offset: 1, nextOffset: -1 }),
     ArrowUp: moveItem({ offset: -8, nextOffset: 8 }),
     ArrowDown: moveItem({ offset: 8, nextOffset: -8 }),
-    Unidentified: () => emit("back"),
     ContextMenu: () => emit("back"),
+    BrowserBack: () => emit("back"),
     Escape: () => emit("back"),
     Enter: () => {
       // 单击是暂停/播放
@@ -104,7 +103,7 @@
       console.log("state.count log==>", count);
       if (count >= 2) {
         state.fullScreen = !state.fullScreen;
-        state.fullScreen ? dp.fullScreen.cancel("web") : dp.fullScreen.request("web");
+        state.fullScreen ? dp.fullScreen.cancel("browser") : dp.fullScreen.request("browser");
         count = 0; // 重置计数
 
         setTimeout(() => {

@@ -4,3 +4,4 @@ frontend/dist
 frontend/autoImport
 .DS_Store
 hls_videos
+dist
