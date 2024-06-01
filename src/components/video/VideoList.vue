@@ -3,15 +3,15 @@
   import { queryVideoList, videoUrl } from "/@/api/hlsvideo";
   import { getNginxHref } from "/@/utils";
   import { VStore } from "/@/utils/store.ts";
-  import mousetrap from "mousetrap"
+  import mousetrap from "mousetrap";
+  import { disContextMenu } from ".";
 
-
-  mousetrap.bind('alt+left', function() {
-    console.log('Alt + 向左箭头 被按下了！🔠🔙');
-    alert(123)
+  mousetrap.bind("alt+left", function () {
+    console.log("Alt + 向左箭头 被按下了！🔠🔙");
+    alert(123);
     // 在这里放置你要执行的自定义操作
-});
-  
+  });
+
   const emit = defineEmits<{
     detail: [value: string];
   }>();
@@ -35,7 +35,7 @@
             name,
             path: "",
             list: [],
-            thumb: videoUrl([name,name+'.webp']),
+            thumb: videoUrl([name, name + ".webp"]),
             history: [1, 101001],
           });
         });
@@ -71,16 +71,14 @@
     ArrowDown: moveItem({ offset: 8, nextOffset: -8 }),
     Enter: () => emit("detail", state.videoList[preIdx].name),
     BrowserBack: () => {
-
       console.log("后退按钮");
-      return false
-      
+      return false;
     },
-    ContextMenu:(event:any)=>{
+    ContextMenu: (event: any) => {
       event.preventDefault();
       console.log("menu");
-      return false
-    }
+      return false;
+    },
   };
 
   onMounted(() => {
@@ -90,6 +88,7 @@
       state.keyCode = event.code as KM;
       keyMap[state.keyCode] && keyMap[state.keyCode](event);
     });
+    disContextMenu();
   });
 </script>
 
@@ -101,7 +100,7 @@
   </div>
   <div class="container">
     <div v-for="(item, idx) in state.videoList" :id="`v${idx}`" :key="idx" :tabindex="idx" class="video" :class="{ mvfoucs: item.focus }">
-      <div class="img" :style="{ 'background-image': 'url(' + item.thumb+ ')' }">
+      <div class="img" :style="{ 'background-image': 'url(' + item.thumb + ')' }">
         <!-- <img :src="item.thumb" alt="图片" style="width: 100%" /> -->
       </div>
       <div class="tittle">{{ item.name }}</div>
