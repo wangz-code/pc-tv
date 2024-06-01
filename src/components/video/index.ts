@@ -22,4 +22,16 @@ const dpHls = function (dpRef: Ref<HTMLElement | null>, url: string) {
   });
 };
 
-export { VideoList, VideoDetail, dpHls };
+// 阻止默认的上下文菜单行为
+const disContextMenu = () => {
+  // 监听页面上的右键单击事件
+  document.addEventListener("contextmenu", function (event) {
+    // 阻止默认的上下文菜单行为
+    event.preventDefault();
+
+    // 在这里可以添加您自己的逻辑或提示信息，比如：
+    console.log("右键菜单已被禁用");
+  });
+};
+
+export { VideoList, VideoDetail, dpHls, disContextMenu };

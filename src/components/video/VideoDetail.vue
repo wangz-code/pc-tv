@@ -4,10 +4,9 @@
   import { getNginxHref } from "/@/utils";
   import { reactive } from "vue";
   import { ref } from "vue";
-  import { dpHls } from "./index";
+  import { disContextMenu, dpHls } from "./index";
   import { LocalStore } from "/@/utils/localstore.ts";
   import DPlayer from "dplayer";
-  import Hls from "hls.js";
 
   const emit = defineEmits<{
     back: [];
@@ -52,6 +51,8 @@
 
         // 先看下历史记录, 如果没有就默认为第一个
         dp = dpHls(dpRef, list[Number(historyValue[0])].url);
+
+        console.log("dp log==>", dp);
         dp.seek(Number(historyValue[1])); // 跳转到特定时间
         dp.play();
       }
@@ -83,7 +84,7 @@
         const vData = state.videoItem[videoIdx.value];
         dp.destroy();
         dp = dpHls(dpRef, vData.url);
-        dp.play()
+        dp.play();
       }, 1500);
     };
   };
@@ -101,22 +102,14 @@
       // 双击是全屏
       count++;
       dp.toggle();
-      console.log("state.count log==>", count);
       if (count >= 2) {
         state.fullScreen = !state.fullScreen;
-        state.fullScreen ? dp.fullScreen.cancel("web") : dp.fullScreen.request("web");
+        state.fullScreen ? dp.fullScreen.cancel("browser") : dp.fullScreen.request("browser");
         count = 0; // 重置计数
-
         setTimeout(() => {
           const con = document.getElementById("dplayer");
-          // 添加点击事件监听器
-          con?.addEventListener("click", function () {
-            console.log("con被点击了！");
-          });
-          // 在运行时主动触发按钮点击事件
-          con?.click();
-          console.log("聚焦 log==>");
-        }, 2000);
+          con?.click(); // 需要触发click 不然无法使用dplayer中的hotkey快进
+        }, 1500);
       }
       timeId && clearTimeout(timeId);
       timeId = setTimeout(() => (count = 0), 1500); // 2秒内双击则全屏, 否则重置
@@ -142,6 +135,7 @@
     getVideoDetail();
     document.addEventListener("keydown", keyDownFn);
     setFocus();
+    disContextMenu();
   });
 
   onBeforeUnmount(() => {

@@ -3,6 +3,7 @@
   import { queryVideoList, videoUrl } from "/@/api/hlsvideo";
   import { getNginxHref } from "/@/utils";
   import { VStore } from "/@/utils/store.ts";
+import { disContextMenu } from ".";
 
   const emit = defineEmits<{
     detail: [value: string];
@@ -71,6 +72,7 @@
       state.keyCode = event.code as KM;
       keyMap[state.keyCode] && keyMap[state.keyCode]();
     });
+    disContextMenu()
   });
 </script>
 
