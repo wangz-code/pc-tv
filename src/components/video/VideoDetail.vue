@@ -4,10 +4,8 @@
   import { getNginxHref } from "/@/utils";
   import { reactive } from "vue";
   import { ref } from "vue";
-  import { disContextMenu, dpHls } from "./index";
+  import { disKey, dpHls, dpNormal } from "./index";
   import { LocalStore } from "/@/utils/localstore.ts";
-  import DPlayer from "dplayer";
-
   const emit = defineEmits<{
     back: [];
   }>();
@@ -20,12 +18,15 @@
     url: string;
   };
 
-  let dp: DPlayer;
+  let dp: any;
   let timeId: NodeJS.Timeout;
   let count = 0;
-  let historyValue = LocalStore.getValue(props.vname) || [0, 0]; // 名称:[剧集,时间]
+  let historyValue = LocalStore.getValue(props.vname) || { history: [0, 0], 0: 0 }; //  {历史:[剧集,时间],剧集01:时间,剧集02:时间}
+
+  console.log(historyValue);
+
   const M3U8 = ".m3u8";
-  const videoIdx = ref(historyValue[0]); // 剧集
+  const videoIdx = ref(historyValue.history[0]); // 剧集
   const setFocus = () => setTimeout(() => document.getElementById("d" + videoIdx.value)?.focus(), 50);
   const dpRef = ref(null);
   const state = reactive({
@@ -38,22 +39,30 @@
     try {
       const { status, data } = await queryVideoDetail(props.vname);
       if (status == 200) {
-        const m3u8List = getNginxHref(data).filter((item) => item.includes(M3U8));
+        let videoList = getNginxHref(data).filter((item) => item.includes(M3U8));
+
+        console.log(videoList);
+        
+        let isM3u8 = true
+        const otherList = getNginxHref(data).filter((item) => item.includes(".mp4"));
+        if(!videoList.length){
+          videoList = otherList
+          isM3u8 = false
+        }
         const list = [] as videoItem[];
-        m3u8List.forEach((item, idx) => {
+        videoList.forEach((item, idx) => {
           list.push({
             focus: idx == 0,
             name: item.replace(M3U8, ""),
             url: videoUrl([props.vname, item]),
           });
         });
+       
+        const his = historyValue.history; // 检查是否存在历史记录
+        if(isM3u8) dp = dpHls(dpRef, list[Number(his[0])].url);
+        if(!isM3u8)  dp = dpNormal(dpRef, list[Number(his[0])].url);
         state.videoItem = list;
-
-        // 先看下历史记录, 如果没有就默认为第一个
-        dp = dpHls(dpRef, list[Number(historyValue[0])].url);
-
-        console.log("dp log==>", dp);
-        dp.seek(Number(historyValue[1])); // 跳转到特定时间
+        dp.seek(Number(his[1])); // 跳转到特定时间
         dp.play();
       }
     } catch (error) {
@@ -81,12 +90,25 @@
       // 3秒后自动开始播放
       delayPlay && clearTimeout(delayPlay);
       delayPlay = setTimeout(() => {
+        // 检查有没有历史记录
+        const his = historyValue[videoIdx.value];
         const vData = state.videoItem[videoIdx.value];
         dp.destroy();
         dp = dpHls(dpRef, vData.url);
+        if (his) dp.seek(Number(his[videoIdx.value]));
         dp.play();
       }, 1500);
     };
+  };
+  const toBack = (event: any) => {
+    event.preventDefault();
+    document.fullscreenElement ? dp.fullScreen.cancel("browser") : emit("back");
+  };
+
+  const toHome = (event: any) => {
+    event.preventDefault();
+    if (document.fullscreenElement) dp.fullScreen.cancel("browser");
+    emit("back");
   };
   // 上下左右非全屏是选集, 全屏时快进和音量
   const keyMap = {
@@ -94,17 +116,17 @@
     ArrowRight: moveItem({ offset: 1, nextOffset: -1 }),
     ArrowUp: moveItem({ offset: -8, nextOffset: 8 }),
     ArrowDown: moveItem({ offset: 8, nextOffset: -8 }),
-    ContextMenu: () => emit("back"),
-    BrowserBack: () => emit("back"),
-    Escape: () => emit("back"),
+    ContextMenu: disKey,
+    BrowserHome: toHome,
+    Escape: toBack,
+    BrowserBack: toBack,
     Enter: () => {
       // 单击是暂停/播放
       // 双击是全屏
       count++;
       dp.toggle();
       if (count >= 2) {
-        state.fullScreen = !state.fullScreen;
-        state.fullScreen ? dp.fullScreen.cancel("browser") : dp.fullScreen.request("browser");
+        document.fullscreenElement ? dp.fullScreen.cancel("browser") : dp.fullScreen.request("browser"); // browser
         count = 0; // 重置计数
         setTimeout(() => {
           const con = document.getElementById("dplayer");
@@ -118,16 +140,17 @@
 
   type KM = keyof typeof keyMap;
   const keyDownFn = (event: { code: string }) => {
-    console.log("event.code log==>", event.code);
-
     const call = keyMap[event.code as KM];
-    call && call();
+    call && call(event);
 
     // 保存视频进度
     if (dp) {
-      historyValue[1] = dp.video.currentTime;
+      console.log("videoIdx.value", videoIdx.value);
+
+      historyValue.history = [videoIdx.value, dp.video.currentTime];
+      historyValue[videoIdx.value] = dp.video.currentTime;
       LocalStore.setValue(props.vname, historyValue);
-      console.log("缓存 log==>");
+      console.log("缓存 log==>", LocalStore);
     }
   };
 
@@ -135,7 +158,6 @@
     getVideoDetail();
     document.addEventListener("keydown", keyDownFn);
     setFocus();
-    disContextMenu();
   });
 
   onBeforeUnmount(() => {
@@ -148,7 +170,6 @@
     <a-card :style="{ width: '80%' }" :title="vname" :bordered="false">
       <div id="dplayer" ref="dpRef" tabindex="0"></div>
       <a-card title="剧集" hoverable :bordered="false">
-        {{ videoIdx }}
         <a-space>
           <a-button :id="'d' + idx" :type="videoIdx == idx ? 'primary' : 'outline'" v-for="(item, idx) in state.videoItem">{{ `第${item.name}集` }}</a-button>
         </a-space>

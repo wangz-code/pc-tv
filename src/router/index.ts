@@ -39,6 +39,11 @@ const router = createRouter({
           name: "Welcome",
           component: () => import("/@/views/welcome/index.vue"),
         },
+        {
+          path: "/detail/:name",
+          name: "Detail",
+          component: () => import("/@/views/welcome/detail.vue"),
+        },
       ],
     },
     REDIRECT_MAIN,

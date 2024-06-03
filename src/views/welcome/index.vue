@@ -1,18 +1,12 @@
 <script setup lang="ts">
-  import { ref } from "vue";
-  import { VideoDetail, VideoList } from "/@/components/video/index";
-  const show = ref<"list" | "detail">("list");
-  const vname = ref("");
-  const showDetail = (name: string) => {
-    show.value = "detail";
-    vname.value = name;
-  };
+  import { VideoList } from "/@/components/video/index";
+  import { useRouter } from "vue-router";
 
-  const showList = () => {
-    show.value = "list";
+  const router = useRouter();
+  const showDetail = (name: string) => {
+    router.push({ path: `/detail/${name}` });
   };
 </script>
 <template>
-  <VideoList v-if="show == 'list'" @detail="showDetail"></VideoList>
-  <VideoDetail v-if="show == 'detail'" :vname="vname" @back="showList"></VideoDetail>
+  <VideoList @detail="showDetail"></VideoList>
 </template>

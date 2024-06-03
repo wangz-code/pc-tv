@@ -1,10 +1,10 @@
 <script setup lang="ts">
-  import { onMounted, reactive } from "vue";
+  import { onMounted, onUnmounted, reactive } from "vue";
   import { queryVideoList, videoUrl } from "/@/api/hlsvideo";
   import { getNginxHref } from "/@/utils";
   import { VStore } from "/@/utils/store.ts";
   import mousetrap from "mousetrap";
-  import { disContextMenu } from ".";
+import { disKey } from ".";
 
   mousetrap.bind("alt+left", function () {
     console.log("Alt + 向左箭头 被按下了！🔠🔙");
@@ -64,31 +64,36 @@
   };
 
   type KM = keyof typeof keyMap;
+
   const keyMap = {
     ArrowLeft: moveItem({ offset: -1, nextOffset: 1 }),
     ArrowRight: moveItem({ offset: 1, nextOffset: -1 }),
     ArrowUp: moveItem({ offset: -8, nextOffset: 8 }),
     ArrowDown: moveItem({ offset: 8, nextOffset: -8 }),
+    BrowserBack:disKey,
+    ContextMenu: disKey,
+    BrowserHome: disKey,
     Enter: () => emit("detail", state.videoList[preIdx].name),
-    BrowserBack: () => {
-      console.log("后退按钮");
-      return false;
-    },
-    ContextMenu: (event: any) => {
-      event.preventDefault();
-      console.log("menu");
-      return false;
-    },
+    NumpadEnter: () => emit("detail", state.videoList[preIdx].name),
+  };
+
+  const showDetail = (idx:number)=>{
+    emit("detail", state.videoList[idx].name)
+  }
+
+  const keyFn = (event: any) => {
+    state.keyCode = event.code as KM;
+    keyMap[state.keyCode] && keyMap[state.keyCode](event);
   };
 
   onMounted(() => {
     setFocus();
     document.getElementById("v" + preIdx)?.scrollIntoView();
-    document.addEventListener("keydown", (event) => {
-      state.keyCode = event.code as KM;
-      keyMap[state.keyCode] && keyMap[state.keyCode](event);
-    });
-    disContextMenu();
+    document.addEventListener("keydown", keyFn);
+  });
+
+  onUnmounted(() => {
+    document.removeEventListener("keydown", keyFn);
   });
 </script>
 
@@ -99,9 +104,8 @@
     <h1 class="mr-10">动画片</h1>
   </div>
   <div class="container">
-    <div v-for="(item, idx) in state.videoList" :id="`v${idx}`" :key="idx" :tabindex="idx" class="video" :class="{ mvfoucs: item.focus }">
+    <div v-for="(item, idx) in state.videoList" @click="showDetail(idx)" :id="`v${idx}`" :key="idx" :tabindex="idx" class="video" :class="{ mvfoucs: item.focus }">
       <div class="img" :style="{ 'background-image': 'url(' + item.thumb + ')' }">
-        <!-- <img :src="item.thumb" alt="图片" style="width: 100%" /> -->
       </div>
       <div class="tittle">{{ item.name }}</div>
     </div>
@@ -112,7 +116,7 @@
   .container {
     display: grid;
     grid-template-columns: repeat(8, 12.5%);
-    grid-template-rows: repeat(8, 350px);
+    grid-template-rows: repeat(8, 500px);
     max-height: calc(100vh - 60px);
     overflow: auto;
   }
@@ -130,7 +134,7 @@
   }
 
   .container .video .img {
-    height: 300px;
+    height: 100%;
     width: 100%;
     background-size: 100% 100%;
     overflow: hidden;
@@ -138,6 +142,15 @@
 
   .container .video .tittle {
     overflow: hidden;
+    width: 100%;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    position: relative;
+    bottom: 40px;
+    background-color: white;
+    line-height: 40px;
+    text-align: center;
+    font-size: large;
   }
 
   .mvfoucs .img {
