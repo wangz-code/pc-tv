@@ -5,3 +5,5 @@ frontend/autoImport
 .DS_Store
 hls_videos
 dist
+auto-imports.d.ts
+components.d.ts
